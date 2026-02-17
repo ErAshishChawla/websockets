@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@repo/contracts": "*",
+    "ansis": "^4.2.0",
     "dotenv": "^16.0.3",
     "express": "^5.2.1",
     "pg": "^8.18.0",
