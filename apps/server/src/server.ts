@@ -1,8 +1,9 @@
 import express from "express";
-import { env } from "./config/env.js";
-
-import { AppDataSource } from "./db/index.js";
 import { Server } from "http";
+import { AppDataSource } from "./db";
+import { env } from "./config";
+
+import { Commentary } from "./entity/Commentary";
 
 let server: Server;
 
@@ -13,6 +14,8 @@ async function startServer() {
     console.log("Connected to database successfully");
 
     const app = express();
+
+    const commentary = new Commentary();
 
     server = app.listen(env.PORT, () => {
       console.log(`Server started listening on port: ${env.PORT}`);

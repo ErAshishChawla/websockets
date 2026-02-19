@@ -1,8 +1,8 @@
 {
   "name": "server",
   "version": "0.1.0",
-  "type": "module",
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "build": "tsc",
     "dev": "tsc-watch --onSuccess \"node --watch dist/server.js\"",
