@@ -1,5 +1,4 @@
 import { MatchStatus } from "@repo/contracts";
-import { Match } from "../entity/Match";
 
 export function getMatchStatus(
   startTime: Date,
