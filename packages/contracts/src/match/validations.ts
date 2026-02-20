@@ -17,8 +17,12 @@ export const CreateMatchSchema = z
     sport: z.string().min(1),
     homeTeam: z.string().min(1),
     awayTeam: z.string().min(1),
-    startTime: z.coerce.date(),
-    endTime: z.coerce.date(),
+    startTime: z.iso
+      .datetime({ offset: true })
+      .transform((startTime) => new Date(startTime)),
+    endTime: z.iso
+      .datetime({ offset: true })
+      .transform((endTime) => new Date(endTime)),
     homeScore: z.coerce.number().int().nonnegative().optional(),
     awayScore: z.coerce.number().int().nonnegative().optional(),
   })
