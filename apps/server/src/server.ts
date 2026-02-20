@@ -2,8 +2,7 @@ import express from "express";
 import { Server } from "http";
 import { AppDataSource } from "./db";
 import { env } from "./config";
-
-import { Commentary } from "./entity/Commentary";
+import { matchRouter } from "./routes/matches";
 
 let server: Server;
 
@@ -15,7 +14,7 @@ async function startServer() {
 
     const app = express();
 
-    const commentary = new Commentary();
+    app.use("/matches", express.json(), matchRouter);
 
     server = app.listen(env.PORT, () => {
       console.log(`Server started listening on port: ${env.PORT}`);

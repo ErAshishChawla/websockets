@@ -34,16 +34,14 @@ export class Match {
   @Column({
     name: "start_time",
     type: "timestamptz",
-    nullable: true,
   })
-  startTime: Date | null;
+  startTime: Date;
 
   @Column({
     name: "end_time",
     type: "timestamptz",
-    nullable: true,
   })
-  endTime: Date | null;
+  endTime: Date;
 
   @Column({
     enum: MatchStatus,
