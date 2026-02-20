@@ -23,8 +23,8 @@ export const CreateMatchSchema = z
     endTime: z.iso
       .datetime({ offset: true })
       .transform((endTime) => new Date(endTime)),
-    homeScore: z.coerce.number().int().nonnegative().optional(),
-    awayScore: z.coerce.number().int().nonnegative().optional(),
+    homeScore: z.number().int().nonnegative().optional(),
+    awayScore: z.number().int().nonnegative().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.endTime <= data.startTime) {
@@ -38,7 +38,7 @@ export const CreateMatchSchema = z
 export type CreateMatchDTO = z.infer<typeof CreateMatchSchema>;
 
 export const UpdateScoreSchema = z.object({
-  homeScore: z.coerce.number().int().nonnegative(),
-  awayScore: z.coerce.number().int().nonnegative(),
+  homeScore: z.number().int().nonnegative(),
+  awayScore: z.number().int().nonnegative(),
 });
 export type UpdateScoreDTO = z.infer<typeof UpdateScoreSchema>;
