@@ -7,6 +7,7 @@ import { Router } from "express";
 import { AppDataSource } from "../db";
 import { Match } from "../entity/Match";
 import { getMatchStatus } from "../utils/match-status";
+import { broadcastMatchCreated } from "../ws";
 
 export const matchRouter = Router();
 
@@ -58,6 +59,8 @@ matchRouter.post("/", async (req, res) => {
     });
 
     const savedMatch = await matchRepository.save(newMatch);
+
+    broadcastMatchCreated(savedMatch);
 
     return res.status(201).json({ data: savedMatch });
   } catch (error) {
