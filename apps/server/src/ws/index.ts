@@ -6,20 +6,27 @@ import { env } from "../config";
 let wss: WebSocketServer | undefined = undefined;
 
 function sendJson(socket: WebSocket, payload: unknown) {
+  const data = JSON.stringify(payload);
   if (socket.readyState !== WebSocket.OPEN) {
     return;
   }
 
-  socket.send(JSON.stringify(payload));
+  socket.send(data, (err) => {
+    if (err) console.error("Web socket send failed:", err);
+  });
 }
 
 function broadcast(wss: WebSocketServer, payload: unknown) {
+  const data = JSON.stringify(payload);
+
   for (const client of wss.clients) {
     if (client.readyState !== WebSocket.OPEN) {
       continue;
     }
 
-    client.send(JSON.stringify(payload));
+    client.send(data, (err) => {
+      if (err) console.error("Web socket broadcast failed:", err);
+    });
   }
 }
 
