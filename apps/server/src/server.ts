@@ -1,10 +1,11 @@
 import express from "express";
-import { Server } from "http";
+import { createServer, Server } from "http";
 import { AppDataSource } from "./db";
 import { env } from "./config";
 import { matchRouter } from "./routes/matches";
+import { attachWebSocketServer, wss } from "./ws";
 
-let server: Server;
+let server: Server | undefined = undefined;
 
 async function startServer() {
   try {
@@ -16,8 +17,19 @@ async function startServer() {
 
     app.use("/matches", express.json(), matchRouter);
 
-    server = app.listen(env.PORT, () => {
-      console.log(`Server started listening on port: ${env.PORT}`);
+    server = createServer(app);
+
+    attachWebSocketServer(server);
+
+    server.listen(env.PORT, env.HOST, () => {
+      const httpUrl =
+        env.HOST === "0.0.0.0"
+          ? `http://localhost:${env.PORT}`
+          : `http://${env.HOST}:${env.PORT}`;
+      const wsUrl = httpUrl.replace("http", "ws");
+
+      console.log(`http server is running on ${httpUrl}`);
+      console.log(`websocket server is running on ${wsUrl}`);
     });
   } catch (error) {
     console.error("Failed to start the server:", error);
@@ -29,10 +41,22 @@ async function shutdown(signal: NodeJS.Signals) {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
 
   try {
-    // 1. Stop the server from accepting new connections
-    if (server) {
+    // 1. Stop the wss server
+    if (wss) {
+      const _wss = wss;
       await new Promise<void>((resolve, reject) => {
-        server.close((err) => {
+        _wss.close((err) => {
+          if (err) return reject(err);
+          console.log("WSS closed.");
+          resolve();
+        });
+      });
+    }
+    // 2. Stop the server from accepting new connections
+    if (server) {
+      const _server = server;
+      await new Promise<void>((resolve, reject) => {
+        _server.close((err) => {
           if (err) return reject(err);
           console.log("HTTP server closed.");
           resolve();
@@ -40,7 +64,7 @@ async function shutdown(signal: NodeJS.Signals) {
       });
     }
 
-    // 2. Close the database connection
+    // 3. Close the database connection
     if (AppDataSource.isInitialized) {
       await AppDataSource.destroy();
       console.log("Database connection closed.");
