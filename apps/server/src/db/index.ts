@@ -9,7 +9,6 @@ export const AppDataSource = new DataSource({
   type: "postgres",
   url: dbConfig.DATABASE_URL,
   synchronize: env.NODE_ENV !== "production" ? true : false,
-  // logging: env.NODE_ENV === "development" ? true : false,
-  logging: false,
+  logging: env.NODE_ENV === "development" ? true : false,
   entities: [Match, Commentary],
 });

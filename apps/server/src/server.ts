@@ -1,5 +1,5 @@
 import express from "express";
-import { Server } from "http";
+import { createServer, Server } from "http";
 import { AppDataSource } from "./db";
 import { env } from "./config";
 import { matchRouter } from "./routes/matches";
@@ -17,15 +17,20 @@ async function startServer() {
 
     app.use("/matches", express.json(), matchRouter);
 
-    server = app.listen(env.PORT, () => {
-      const host =
+    server = createServer(app);
+
+    attachWebSocketServer(server);
+
+    server.listen(env.PORT, env.HOST, () => {
+      const httpUrl =
         env.HOST === "0.0.0.0"
           ? `http://localhost:${env.PORT}`
           : `http://${env.HOST}:${env.PORT}`;
-      console.log(`HTTP server is ready to accept requests: ${host}`);
-    });
+      const wsUrl = httpUrl.replace("http", "ws");
 
-    attachWebSocketServer(server);
+      console.log(`http server is running on ${httpUrl}`);
+      console.log(`websocket server is running on ${wsUrl}`);
+    });
   } catch (error) {
     console.error("Failed to start the server:", error);
     process.exit(1);
@@ -59,7 +64,7 @@ async function shutdown(signal: NodeJS.Signals) {
       });
     }
 
-    // 2. Close the database connection
+    // 3. Close the database connection
     if (AppDataSource.isInitialized) {
       await AppDataSource.destroy();
       console.log("Database connection closed.");

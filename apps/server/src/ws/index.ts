@@ -39,14 +39,6 @@ function attachWebSocketServer(server: Server) {
     socket.on("error", console.error);
   });
 
-  wss.on("listening", () => {
-    const host =
-      env.HOST === "0.0.0.0"
-        ? `ws://localhost:${env.PORT}`
-        : `ws://${env.HOST}:${env.PORT}`;
-    console.log(`Websocket server is ready to accept connections: ${host}`);
-  });
-
   return wss;
 }
 
