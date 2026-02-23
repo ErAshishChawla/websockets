@@ -3,7 +3,7 @@ import { createServer, Server } from "http";
 import { AppDataSource } from "./db";
 import { env } from "./config";
 import { matchRouter } from "./routes/matches";
-import { attachWebSocketServer, wss } from "./ws";
+import { attachWebSocketServer, getWSS } from "./ws";
 
 let server: Server | undefined = undefined;
 
@@ -39,6 +39,8 @@ async function startServer() {
 
 async function shutdown(signal: NodeJS.Signals) {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
+
+  const wss = getWSS();
 
   try {
     // 1. Stop the wss server
