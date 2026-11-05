@@ -1,3 +1,51 @@
+# Live Match Server
+
+Real-time sports match updates: an **Express + `ws`** server broadcasts typed events, and a **Next.js** client consumes them as **RxJS observable streams**.
+
+## How the live client works (RxJS)
+
+```
+            GET /api/matches (fromFetch)           WebSocket /ws (webSocket)
+                     │                                       │
+             loaded snapshot                  retry/repeat + backoff, share()
+                     │                                       │
+                     │                         ofType("match_created")
+                     └───────────── merge ───────────────────┘
+                                      │
+                         scan(reduceMatches)  → dedupe, newest first, cap 50
+                                      │
+                         matches$ → React state (useEffect subscribe / unsubscribe)
+```
+
+| File | What it shows |
+|---|---|
+| `packages/contracts/src/ws/messages.ts` | Typed envelope: `ServerMessage` discriminated union shared by server and client |
+| `apps/web/lib/live/socket.ts` | `webSocket()` subject, reconnect with exponential backoff (`retry` on error, `repeat` on clean close), `share()` for one connection, connection `status$` (`BehaviorSubject`) |
+| `apps/web/lib/live/operators.ts` | Custom `ofType()` operator with TypeScript type narrowing |
+| `apps/web/lib/live/matches.ts` | `merge` of HTTP snapshot + live events, folded with `scan` into a pure reducer |
+| `apps/web/app/live-matches.tsx` | React integration: subscribe in `useEffect`, unsubscribe on cleanup; `aria-live` announcements for new matches |
+| `apps/web/lib/live/matches.test.ts` | **Marble tests** with RxJS `TestScheduler` (virtual time) |
+
+### Run it
+
+```sh
+docker compose up -d db          # Postgres
+npm install
+npm run dev                      # server + web via Turborepo
+npm test -w web                  # marble tests
+```
+
+Client config (optional): `NEXT_PUBLIC_WS_URL` (default `ws://localhost:8000/ws`), `SERVER_URL` for the `/api` proxy (default `http://localhost:8000`).
+
+Create a match and watch it appear live:
+
+```sh
+curl -X POST http://localhost:8000/matches -H "Content-Type: application/json" \
+  -d '{"sport":"football","homeTeam":"Toronto","awayTeam":"Montreal","startTime":"2026-02-01T18:00:00Z","endTime":"2026-02-01T20:00:00Z"}'
+```
+
+---
+
 # Turborepo starter
 
 This Turborepo starter is maintained by the Turborepo core team.
